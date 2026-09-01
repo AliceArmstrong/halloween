@@ -12,7 +12,7 @@ const layoutByVariant = {
 };
 
 // For clearing votes
-const SHOW_HEADER = true;
+const SHOW_HEADER = false;
 
 export default function App() {
   const [variant, setVariant] = useState(DEFAULT_UI_VARIANT);
