@@ -11,8 +11,7 @@ This app now stores votes in Supabase so results persist between users.
 - UI layouts are pluggable:
    - `src/layouts/ClassicLayout.jsx`
    - `src/layouts/SpotlightLayout.jsx`
-- The active layout is selected in `src/App.jsx` and can be switched from the UI style dropdown.
-- Selected UI style is saved in local storage under `vote-ui-variant`.
+- The active layout is selected in `src/App.jsx`, defaults to `DEFAULT_UI_VARIANT` in `src/config/uiVariants.js`, and can be switched from the UI style dropdown for the current session.
 
 ## 1) Create a Supabase project
 
@@ -36,7 +35,16 @@ npm install
 npm run dev
 ```
 
-## 3) Deploy to Vercel for free
+## 3) Deploy to GitHub Pages
+
+The repo's `.github/workflows/deploy-frontend.yml` builds and publishes `frontend/dist` on pushes to `main`. Set these in the repository before it runs:
+
+- Secrets: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`
+- Variable (only for a project site, e.g. `https://<user>.github.io/vote-page/`): `VITE_BASE_PATH` set to `/vote-page/`
+
+Vite embeds `VITE_*` values into the static bundle at build time, so they must be configured as repo secrets/variables ahead of the workflow run.
+
+## 4) Deploy to Vercel for free (alternative)
 
 1. Push this repo to GitHub.
 2. In Vercel, click New Project and import the repo.
@@ -48,7 +56,7 @@ npm run dev
 
 Vercel gives you a public `*.vercel.app` URL on first deploy.
 
-## 4) Notes and limits
+## 5) Notes and limits
 
 - This is intentionally lightweight: frontend + Supabase only.
 - Public insert policies are simple to launch but can be abused by bots.

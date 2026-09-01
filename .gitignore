@@ -4,7 +4,6 @@ frontend/.npm-cache/
 
 # Build output
 frontend/dist/
-backend/.aws-sam/
 
 # Env files
 .env
