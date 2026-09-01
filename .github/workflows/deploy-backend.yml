@@ -1,0 +1,87 @@
+name: Deploy Backend (SAM)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - .github/workflows/deploy-backend.yml
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      SAM_STACK_NAME: ${{ vars.SAM_STACK_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Build backend
+        working-directory: backend
+        run: sam build -t template.yaml
+
+      - name: Deploy backend
+        working-directory: backend
+        run: |
+          sam deploy \
+            --stack-name "$SAM_STACK_NAME" \
+            --region "$AWS_REGION" \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      - name: Capture API base URL
+        id: stack-output
+        run: |
+          API_BASE_URL=$(aws cloudformation describe-stacks \
+            --stack-name "$SAM_STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiBaseUrl'].OutputValue" \
+            --output text \
+            --region "$AWS_REGION")
+          echo "api_base_url=$API_BASE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Save API URL as repository variable
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const value = `${{ steps.stack-output.outputs.api_base_url }}`;
+            if (!value) {
+              core.setFailed('ApiBaseUrl output was empty');
+              return;
+            }
+            await github.request('PATCH /repos/{owner}/{repo}/actions/variables/{name}', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'VITE_API_BASE_URL',
+              value
+            });
