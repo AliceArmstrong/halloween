@@ -21,6 +21,7 @@ export default function SpotlightLayout({
 }) {
   const leftOption = options[0];
   const rightOption = options[1];
+  const showStatus = status && status !== "Live vote totals loaded.";
 
   if (!leftOption || !rightOption) {
     return null;
@@ -34,18 +35,25 @@ export default function SpotlightLayout({
         <p>Saturday 31st October<br />1 York Lane, CR4 1GX</p>
       </header>
       <div className="arena-controls">
-        <VoteForm
-          options={options.map((option) => ({
-            ...option,
-            label: getOptionLabel(option.key),
-          }))}
-          selected={selected}
-          setSelected={setSelected}
-          name={name}
-          setName={setName}
-          onSubmit={submitSelectedVote}
-          saving={saving}
-        />
+        <div className="arena-vote-stack">
+          <VoteForm
+            options={options.map((option) => ({
+              ...option,
+              label: getOptionLabel(option.key),
+            }))}
+            selected={selected}
+            setSelected={setSelected}
+            name={name}
+            setName={setName}
+            onSubmit={submitSelectedVote}
+            saving={saving}
+          />
+          {showStatus ? (
+            <p className="status" aria-live="polite">
+              {status}
+            </p>
+          ) : null}
+        </div>
       </div>
         <div className="arena-grid">
           <aside className="fighter-column fighter-left" aria-label={`${leftOption.label} side`}>

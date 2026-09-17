@@ -57,7 +57,7 @@ export function useVotes() {
     try {
       const updated = await submitVote(selected, name);
       setVotes(updated);
-      setStatus("Vote recorded.");
+      setStatus("Success!");
     } catch (error) {
       setStatus(error.message);
     } finally {
