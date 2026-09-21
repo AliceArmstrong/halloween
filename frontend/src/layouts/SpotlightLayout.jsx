@@ -36,7 +36,8 @@ export default function SpotlightLayout({
       </header>
       <div className="arena-controls">
         <div className="arena-vote-stack">
-          <VoteForm
+          <p>Votes are now closed</p>
+          {/* <VoteForm
             options={options.map((option) => ({
               ...option,
               label: getOptionLabel(option.key),
@@ -52,7 +53,7 @@ export default function SpotlightLayout({
             <p className="status" aria-live="polite">
               {status}
             </p>
-          ) : null}
+          ) : null} */}
         </div>
       </div>
         <div className="arena-grid">
